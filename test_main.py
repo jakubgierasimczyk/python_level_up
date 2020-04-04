@@ -14,11 +14,11 @@ def test_read_main():
 
 
 
-@pytest.mark.parametrize("method_name", ['GET', 'POST', 'PUT', 'DELETE'])
-def test_get_model(method_name):
-	response = client.get(f"/method/{method_name}")
-	assert response.status_code == 200
-	assert response.json() == {"method_name": f"{method_name}"}
+# @pytest.mark.parametrize("method_name", ['GET', 'POST', 'PUT', 'DELETE'])
+# def test_get_method(method_name):
+# 	response = client.get("/method")
+# 	assert response.status_code == 200
+# 	assert response.json() == {"method_name": f"{method_name}"}
 
 
-
+	

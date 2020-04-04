@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from enum import Enum
+from pydantic import BaseModel
 
 
 class MethodName(str, Enum):
@@ -20,6 +21,11 @@ def root():
 
 
 
-@app.get("/method/{method_name}")
-async def get_model(method_name: MethodName):
+@app.get("/method")
+async def get_method(method_name: MethodName):
+    return {"method_name": method_name.value}
+
+
+@app.put("/method")
+def put_method(method_name: MethodName):
     return {"method_name": method_name.value}
