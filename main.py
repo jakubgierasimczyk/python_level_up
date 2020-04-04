@@ -31,6 +31,11 @@ def put_method():
     return {"method_name": "PUT"}
 
 
+@app.post("/method")
+def post_method():
+    return {"method_name": "POST"}
+
+
 # @app.put("/method")
 # def put_method(method_name: MethodName):
 #     return {"method_name": method_name.value}

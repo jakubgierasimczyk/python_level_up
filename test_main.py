@@ -14,6 +14,18 @@ def test_read_main():
 
 
 
+def test_get_method():
+	response = client.get('/method')
+	assert response.json() == {"method_name": "GET"}
+
+def test_put_method():
+	response = client.put('/method')
+	assert response.json() == {"method_name": "PUT"}
+
+
+def test_post_method():
+	response = client.post('/method')
+	assert response.json() == {"method_name": "POST"}
 
 
 # @pytest.mark.parametrize("method_name", ['GET', 'POST', 'PUT', 'DELETE'])
