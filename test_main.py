@@ -16,16 +16,16 @@ def test_read_main():
 
 def test_get_method():
 	response = client.get('/method')
-	assert response.json() == {"method_name": "GET"}
+	assert response.json() == {"method": "GET"}
 
 def test_put_method():
 	response = client.put('/method')
-	assert response.json() == {"method_name": "PUT"}
+	assert response.json() == {"method": "PUT"}
 
 
 def test_post_method():
 	response = client.post('/method')
-	assert response.json() == {"method_name": "POST"}
+	assert response.json() == {"method": "POST"}
 
 
 # @pytest.mark.parametrize("method_name", ['GET', 'POST', 'PUT', 'DELETE'])

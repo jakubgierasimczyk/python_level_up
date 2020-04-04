@@ -23,17 +23,17 @@ def root():
 
 @app.get("/method")
 async def get_method():
-    return {"method_name": "GET"}
+    return {"method": "GET"}
 
 
 @app.put("/method")
 def put_method():
-    return {"method_name": "PUT"}
+    return {"method": "PUT"}
 
 
 @app.post("/method")
 def post_method():
-    return {"method_name": "POST"}
+    return {"method": "POST"}
 
 
 # @app.put("/method")
