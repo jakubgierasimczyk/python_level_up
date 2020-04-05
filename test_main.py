@@ -30,6 +30,11 @@ def test_post_method():
 
 
 def test_post_patient():
+	response = client.post("/patient", json={'name': 'asd', 'surename': 'qwe'})
+	assert response.status_code == 200
+	assert response.json() == {"id": 0, "patient": {"name": "asd", "surename": "qwe"}}
+
+
 	response = client.post("/patient", json={'name': 'JAKUB', 'surename': 'GIERASIMCZYK'})
 	assert response.status_code == 200
 	assert response.json() == {"id": 1, "patient": {"name": "JAKUB", "surename": "GIERASIMCZYK"}}
@@ -48,7 +53,9 @@ def test_read_patient_pk():
 	assert response.status_code == 204
 
 	response = client.get("/patient/0")
-	assert response.status_code == 204
+	assert response.status_code == 200
+	assert response.json() == {"name": "asd", "surename": "qwe"}
+
 
 
 
