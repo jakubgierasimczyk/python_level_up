@@ -45,8 +45,7 @@ def test_read_patient_pk():
 	assert response.json() == {"name": "JAKUB", "surename": "GIERASIMCZYK"}
 
 	response = client.get("/patient/3")
-	assert response.status_code == 200
-	assert response.text == "404"
+	assert response.status_code == 204
 
 
 
