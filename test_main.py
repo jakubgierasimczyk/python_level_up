@@ -28,6 +28,16 @@ def test_post_method():
 	assert response.json() == {"method": "POST"}
 
 
+
+def test_post_patient():
+	response = client.post("/patient", json={'name': 'JAKUB', 'surename': 'GIERASIMCZYK'})
+	assert response.status_code == 200
+	assert response.json() == {"id": 1, "patient": {"name": "JAKUB", "surename": "GIERASIMCZYK"}}
+	# assert response.json() == {"patient": {"name": "JAKUB", "surename": "GIERASIMCZYK"}}
+
+
+
+
 # @pytest.mark.parametrize("method_name", ['GET', 'POST', 'PUT', 'DELETE'])
 # def test_get_method(method_name):
 # 	response = client.get("/method")
