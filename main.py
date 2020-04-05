@@ -60,7 +60,7 @@ def receive_patient(rq: GiveMePatientRequest):
 
 @app.get("/patient/{pk}", status_code = 200)
 def read_patient_pk(pk: int, response: Response):
-	if app.counter < pk: 
+	if app.counter < pk or pk <= 0: 
 		response.status_code = 204
 		return 204
 	else:

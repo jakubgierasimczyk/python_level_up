@@ -47,6 +47,9 @@ def test_read_patient_pk():
 	response = client.get("/patient/3")
 	assert response.status_code == 204
 
+	response = client.get("/patient/0")
+	assert response.status_code == 204
+
 
 
 
