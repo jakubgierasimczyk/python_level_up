@@ -58,10 +58,10 @@ def receive_patient(rq: GiveMePatientRequest):
 
 
 
-@app.get("/patient/{pk}")
+@app.get("/patient/{pk}", status_code = 200)
 def read_patient_pk(pk: int):
 	if app.counter < pk: 
-		return "https://en.wikipedia.org/wiki/List_of_HTTP_status_codes" 
+		return 404
 	else:
 		return app.patients[pk]
 

@@ -46,7 +46,7 @@ def test_read_patient_pk():
 
 	response = client.get("/patient/3")
 	assert response.status_code == 200
-	assert response.json() == "https://en.wikipedia.org/wiki/List_of_HTTP_status_codes"
+	assert response.text == "404"
 
 
 
