@@ -12,6 +12,7 @@ class MethodName(str, Enum):
 
 app = FastAPI()
 app.counter = 0
+app.patients = {}
 
 
 
@@ -50,15 +51,22 @@ class GiveMePatientResponse(BaseModel):
 @app.post("/patient", response_model=GiveMePatientResponse)
 def receive_patient(rq: GiveMePatientRequest):
 	app.counter += 1
-	return GiveMePatientResponse(id = app.counter, patient=rq.dict())
+	patient=rq.dict()
+	app.patients[app.counter] = patient
+	return GiveMePatientResponse(id = app.counter, patient = patient)
 
 
-# @app.post("/patient")
-# def post_patient():
-# 	app.counter += 1
-# 	return {"id": app.counter, "patient": {"name": "JAKUB", "surename": "GIERASIMCZYK"}}
 
 
-# @app.put("/method")
-# def put_method(method_name: MethodName):
-#     return {"method_name": method_name.value}
+@app.get("/patient/{pk}")
+def read_patient_pk(pk: int):
+	if app.counter < pk: 
+		return "https://en.wikipedia.org/wiki/List_of_HTTP_status_codes" 
+	else:
+		return app.patients[pk]
+
+
+
+
+
+

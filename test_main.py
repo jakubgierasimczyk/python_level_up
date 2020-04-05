@@ -33,7 +33,21 @@ def test_post_patient():
 	response = client.post("/patient", json={'name': 'JAKUB', 'surename': 'GIERASIMCZYK'})
 	assert response.status_code == 200
 	assert response.json() == {"id": 1, "patient": {"name": "JAKUB", "surename": "GIERASIMCZYK"}}
-	# assert response.json() == {"patient": {"name": "JAKUB", "surename": "GIERASIMCZYK"}}
+
+	response = client.post("/patient", json={'name': 'STEFAN', 'surename': 'BANACH'})
+	assert response.status_code == 200
+	assert response.json() == {"id": 2, "patient": {"name": "STEFAN", "surename": "BANACH"}}
+
+
+def test_read_patient_pk():
+	response = client.get("/patient/1")
+	assert response.status_code == 200
+	assert response.json() == {"name": "JAKUB", "surename": "GIERASIMCZYK"}
+
+	response = client.get("/patient/3")
+	assert response.status_code == 200
+	assert response.json() == "https://en.wikipedia.org/wiki/List_of_HTTP_status_codes"
+
 
 
 
