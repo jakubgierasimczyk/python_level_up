@@ -16,9 +16,9 @@ app.patients = {}
 
 
 
-@app.get("/")
-def root():
-	return {"message": "Hello World during the coronavirus pandemic!"}
+# @app.get("/")
+# def root():
+# 	return {"message": "Hello World during the coronavirus pandemic!"}
 
 
 
@@ -67,6 +67,23 @@ def read_patient_pk(pk: int, response: Response):
 		return app.patients[pk]
 
 
+
+
+
+
+# ------------------------ Lecture 3  ------------------------ #
+
+
+# ----- Zadanie 1 
+
+@app.get("/")
+def root():
+	return "Hello!"
+
+
+@app.get("/welcome")
+def get_welcome():
+	return "Hello!"
 
 
 

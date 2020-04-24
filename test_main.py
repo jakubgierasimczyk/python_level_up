@@ -6,10 +6,10 @@ from main import app
 client = TestClient(app)
 
 
-def test_read_main():
-    response = client.get("/")
-    assert response.status_code == 200
-    assert response.json() == {"message": "Hello World during the coronavirus pandemic!"}
+# def test_read_main():
+#     response = client.get("/")
+#     assert response.status_code == 200
+#     assert response.json() == {"message": "Hello World during the coronavirus pandemic!"}
 
 
 
@@ -60,12 +60,19 @@ def test_read_patient_pk():
 
 
 
-
-# @pytest.mark.parametrize("method_name", ['GET', 'POST', 'PUT', 'DELETE'])
-# def test_get_method(method_name):
-# 	response = client.get("/method")
-# 	assert response.status_code == 200
-# 	assert response.json() == {"method_name": f"{method_name}"}
+# ------------------------ Lecture 3  ------------------------ #
 
 
-	
+# ----- Zadanie 1 
+
+
+def test_root():
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.json() == "Hello!"
+
+
+def test_get_welcome():
+    response = client.get("/welcome")
+    assert response.status_code == 200
+    assert response.json() == "Hello!"
