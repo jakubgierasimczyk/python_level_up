@@ -132,6 +132,12 @@ def create_cookie(user: str, password: str, response: Response):
     response.headers["Location"] = "/welcome"
     response.set_cookie(key="session_token", value=session_token)
     # response = RedirectResponse(url = "/welcome")
-    response.status_code = status.HTTP_302_FOUND
+    # response.status_code = status.HTTP_302_FOUND
+    response.status_code = 302
     
     return response
+
+
+
+
+
