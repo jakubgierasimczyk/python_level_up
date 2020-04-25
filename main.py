@@ -113,15 +113,10 @@ app.tokens_list = []
 
 
 @app.post("/login")
-def create_cookie(user: str, password: str):
+def create_cookie(user: str, password: str, response: Response):
     
-    print(f'{user=}\n{password=}')
-
     correct_username = user == "trudnY"
     correct_password = password == "PaC13Nt"
-    
-    print(f'{correct_username=}')
-    print(f'{correct_password=}')
     
     if not (correct_username and correct_password):
         raise HTTPException(
@@ -132,15 +127,13 @@ def create_cookie(user: str, password: str):
 
     session_token = sha256(bytes(f"{user}{password}{app.secret_key}", encoding='utf8')).hexdigest()
     app.tokens_list.append(session_token)
-    print(f"{app.tokens_list=}")
-    response = RedirectResponse(url = "/welcome")
+    
     response.set_cookie(key="session_token", value=session_token)
+
+    response = RedirectResponse(url = "/welcome")
+    response.status_code = status.HTTP_302_FOUND
     return response
 
-
-@app.post("/welcome")
-def get_welcome():
-    return "Hello!"
 
 
 
