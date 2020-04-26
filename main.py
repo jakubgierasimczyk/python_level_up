@@ -123,7 +123,7 @@ def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
             # detail="Incorrect email or password",
             # headers={"WWW-Authenticate": "Basic"},
         )
-    return credentials.username
+    return credentials.username + ":" + credentials.password
 
 
 
@@ -157,13 +157,15 @@ def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
 
 @app.post("/login")
 def login(
-        user: str, password: str, 
         response: Response, 
         credentials_user = Depends(get_current_username)):
     
+    user, password = credentials_user.split(":")
+
     session_token = sha256(bytes(f"{user}{password}{app.secret_key}", encoding='utf8')).hexdigest()
     app.tokens_list.append(session_token)
     
+
 
     response = RedirectResponse(url='/welcome')
     response.status_code = status.HTTP_302_FOUND
