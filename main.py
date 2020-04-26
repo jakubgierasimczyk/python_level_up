@@ -40,31 +40,31 @@ def post_method():
 
 
 
-class GiveMePatientRequest(BaseModel):
-	name: str
-	surename: str
+# class GiveMePatientRequest(BaseModel):
+# 	name: str
+# 	surename: str
 
-class GiveMePatientResponse(BaseModel):
-	id: int
-	patient: dict
+# class GiveMePatientResponse(BaseModel):
+# 	id: int
+# 	patient: dict
 
-@app.post("/patient", response_model=GiveMePatientResponse)
-def receive_patient(rq: GiveMePatientRequest):
-	app.counter += 1
-	patient=rq.dict()
-	app.patients[app.counter] = patient
-	return GiveMePatientResponse(id = app.counter, patient = patient)
-
-
+# @app.post("/patient", response_model=GiveMePatientResponse)
+# def receive_patient(rq: GiveMePatientRequest):
+# 	app.counter += 1
+# 	patient=rq.dict()
+# 	app.patients[app.counter] = patient
+# 	return GiveMePatientResponse(id = app.counter, patient = patient)
 
 
-@app.get("/patient/{pk}", status_code = 200)
-def read_patient_pk(pk: int, response: Response):
-	if app.counter < pk or pk < 0: 
-		response.status_code = 204
-		return 204
-	else:
-		return app.patients[pk]
+
+
+# @app.get("/patient/{pk}", status_code = 200)
+# def read_patient_pk(pk: int, response: Response):
+# 	if app.counter < pk or pk < 0: 
+# 		response.status_code = 204
+# 		return 204
+# 	else:
+# 		return app.patients[pk]
 
 
 
@@ -137,8 +137,9 @@ def login(
     app.tokens_list.append(session_token)
     
     response.set_cookie(key="session_token", value=session_token)
-    response.status_code = 302
+    response.status_code = status.HTTP_302_FOUND
     response.headers["Location"] = "/welcome"
+    print(f"{response.status_code}")
     # response = RedirectResponse(url = "/welcome")
     # response.status_code = status.HTTP_302_FOUND
     
@@ -171,5 +172,52 @@ templates = Jinja2Templates(directory="templates")
 @app.post("/welcome")
 @app.get("/welcome")
 def get_welcome(request: Request, credentials_user = Depends(get_current_username)):
-    print(f'{credentials_user}')
     return templates.TemplateResponse("item.html", {"request": request, "user": credentials_user})
+
+
+
+
+
+
+# ----- Zadanie 5
+
+@app.post("/patient")
+def receive_patient(
+        name: str, surname: str, 
+        response: Response,
+        credentials_user = Depends(get_current_username)
+    ):
+    app.counter += 1
+    patient={"name": name, "surname": surname}
+    app.patients[app.counter] = patient
+
+    response.status_code = status.HTTP_302_FOUND
+    response.headers["Location"] = f"/patient/{app.counter}"
+    return patient
+
+@app.get("/patient")
+def all_patients(credentials_user = Depends(get_current_username)):
+    return app.patients
+
+
+
+
+@app.get("/patient/{pk}", status_code = 200)
+def read_patient_pk(pk: int, response: Response, credentials_user = Depends(get_current_username)):
+    if app.counter < pk or pk < 0: 
+        response.status_code = 204
+        return 204
+    else:
+        return app.patients[pk]
+
+@app.delete("/patient/{pk}")
+def delete_patient_pk(pk: int, credentials_user = Depends(get_current_username)):
+    try:
+        del app.patients[pk]
+        print(f'Patient {pk} removed')
+    except KeyError:
+        print(f"Key {pk} not found")
+
+
+# "trudnY"
+# "PaC13Nt"
