@@ -115,6 +115,8 @@ security = HTTPBasic()
 def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
     correct_username = secrets.compare_digest(credentials.username, "trudnY")
     correct_password = secrets.compare_digest(credentials.password, "PaC13Nt")
+    print(f"{credentials.username}")
+    print(f"{credentials.password}")
     if not (correct_username and correct_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -143,6 +145,17 @@ def login(
     
     return response
 
+
+
+
+
+# ----- Zadanie 3
+@app.post("/logout")
+def logout(credentials_user = Depends(get_current_username)):
+    response = RedirectResponse(url="/")
+    response.status_code = status.HTTP_302_FOUND
+    response.delete_cookie("session_token")
+    return response
 
 
 
