@@ -137,11 +137,10 @@ def login(
     app.tokens_list.append(session_token)
     
     response.set_cookie(key="session_token", value=session_token)
-    
-        
+    response.status_code = 302
     response.headers["Location"] = "/welcome"
     # response = RedirectResponse(url = "/welcome")
-    response.status_code = status.HTTP_302_FOUND
+    # response.status_code = status.HTTP_302_FOUND
     
     return response
 
