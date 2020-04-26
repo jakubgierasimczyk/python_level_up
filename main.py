@@ -102,36 +102,56 @@ def get_welcome():
 # ----- Zadanie 2
 
 from starlette.responses import RedirectResponse
-# from fastapi.security import HTTPBasic, HTTPBasicCredentials
-# from fastapi import Depends
-# import secrets
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi import Depends
+import secrets
 
 
 app.secret_key = "very constatn and random secret, best 64 characters"
 app.tokens_list = []
+security = HTTPBasic()
+
+
+def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
+    correct_username = secrets.compare_digest(credentials.username, "trudnY")
+    correct_password = secrets.compare_digest(credentials.password, "PaC13Nt")
+    if not (correct_username and correct_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            # detail="Incorrect email or password",
+            # headers={"WWW-Authenticate": "Basic"},
+        )
+    return credentials.username
 
 
 
 @app.post("/login")
-def create_cookie(user: str, password: str, response: Response):
+def login(
+    user: str, password: str, 
+    response: Response, 
+    credentials_user = Depends(get_current_username)):
     
-    correct_username = user == "trudnY"
-    correct_password = password == "PaC13Nt"
+    print(f"{user}")
+    print(f"{password}")
+    print(f"{credentials_user}")
+
+    # correct_username = user == "trudnY"
+    # correct_password = password == "PaC13Nt"
     
-    if not (correct_username and correct_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            # detail="Incorrect login or password",
-            # headers={"WWW-Authenticate": "Basic"},
-        )
+    # if not (correct_username and correct_password):
+    #     raise HTTPException(
+    #         status_code=status.HTTP_401_UNAUTHORIZED,
+    #         # detail="Incorrect login or password",
+    #         # headers={"WWW-Authenticate": "Basic"},
+    #     )
 
     session_token = sha256(bytes(f"{user}{password}{app.secret_key}", encoding='utf8')).hexdigest()
     app.tokens_list.append(session_token)
     
     response.set_cookie(key="session_token", value=session_token)
+    
     response = RedirectResponse(url = "/welcome")
     response.status_code = status.HTTP_302_FOUND
-    # response.status_code = 302
     
     return response
 
