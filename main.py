@@ -11,7 +11,8 @@ class MethodName(str, Enum):
 
 
 app = FastAPI()
-app.counter = -1
+# app.counter = -1
+app.counter = 0
 app.patients = {}
 
 
@@ -252,7 +253,7 @@ def read_patient_pk(
 
 
 
-    if app.counter < pk or pk < 0: 
+    if app.counter < pk or pk < 1: 
         response.status_code = 204
         return 204
     else:
