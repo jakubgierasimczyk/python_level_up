@@ -88,9 +88,9 @@ def root():
 	return "Hello!"
 
 
-@app.get("/welcome")
-def get_welcome():
-	return "Hello!"
+# @app.get("/welcome")
+# def get_welcome():
+# 	return "Hello!"
 
 
 
@@ -138,8 +138,7 @@ def login(
     
     response.set_cookie(key="session_token", value=session_token)
     
-    
-    
+        
     response = RedirectResponse(url = "/welcome")
     response.status_code = status.HTTP_302_FOUND
     
@@ -160,3 +159,21 @@ def logout(credentials_user = Depends(get_current_username)):
 
 
 
+# ----- Zadanie 4
+
+# from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi import Request
+
+templates = Jinja2Templates(directory="templates")
+# app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/items/{id}")
+def read_item(request: Request, id: str):
+    return templates.TemplateResponse("item.html", {"request": request, "id": id})
+
+
+@app.get("/welcome")
+def get_welcome(request: Request, credentials_user = Depends(get_current_username)):
+    print(f'{credentials_user}')
+    return templates.TemplateResponse("item.html", {"request": request, "user": credentials_user})
