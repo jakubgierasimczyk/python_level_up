@@ -146,9 +146,9 @@ def login(
     return response
 
 
-@app.get('/welcome')
-def get_welcome():
-    return "Hello!"
+# @app.get('/welcome')
+# def get_welcome():
+#     return "Hello!"
 
 
 
@@ -165,15 +165,17 @@ def logout(response: Response):
 
 # # ----- Zadanie 4
 
-# from fastapi.templating import Jinja2Templates
-# from fastapi import Request
+from fastapi.templating import Jinja2Templates
+from fastapi import Request
 
-# templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="templates")
 
-# @app.post("/welcome")
-# @app.get("/welcome")
-# def get_welcome(request: Request, credentials_user = Depends(get_current_username)):
-#     return templates.TemplateResponse("item.html", {"request": request, "user": credentials_user})
+@app.get("/welcome")
+def get_welcome(
+    request: Request 
+    # session_token = Depends(get_current_username)
+    ):
+    return templates.TemplateResponse("item.html", {"request": request, "user": credentials_user})
 
 
 
