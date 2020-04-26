@@ -115,8 +115,8 @@ security = HTTPBasic()
 def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
     correct_username = secrets.compare_digest(credentials.username, "trudnY")
     correct_password = secrets.compare_digest(credentials.password, "PaC13Nt")
-    print(f"{credentials.username}")
-    print(f"{credentials.password}")
+    # print(f"{credentials.username}")
+    # print(f"{credentials.password}")
     if not (correct_username and correct_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -128,6 +128,7 @@ def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
 
 
 @app.post("/login")
+@app.get("/login")
 def login(
     user: str, password: str, response: Response,
     credentials_user = Depends(get_current_username)
@@ -139,7 +140,7 @@ def login(
     response.set_cookie(key="session_token", value=session_token)
     response.status_code = status.HTTP_302_FOUND
     response.headers["Location"] = "/welcome"
-    print(f"{response.status_code}")
+    
     # response = RedirectResponse(url = "/welcome")
     # response.status_code = status.HTTP_302_FOUND
     
@@ -187,6 +188,7 @@ def receive_patient(
         response: Response,
         credentials_user = Depends(get_current_username)
     ):
+
     app.counter += 1
     patient={"name": name, "surname": surname}
     app.patients[app.counter] = patient
