@@ -221,8 +221,9 @@ def receive_patient(
     
     return patient
 
+
 @app.get("/patient")
-def all_patients(session_token = Cookie(None)):
+def all_patients(response = Response, session_token = Cookie(None)):
 
     if not session_token in app.tokens_list:
         raise HTTPException(
@@ -261,6 +262,7 @@ def read_patient_pk(
 @app.delete("/patient/{pk}")
 def delete_patient_pk(
         pk: int, 
+        response: Response,
         session_token = Cookie(None)):
 
     if not session_token in app.tokens_list:
