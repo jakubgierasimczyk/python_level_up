@@ -136,7 +136,6 @@ def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
 @app.post("/login")
 def login(
         response: Response, 
-        # credentials_user = Depends(get_current_username)):
         session_token: str = Depends(get_current_username)):
     
 
@@ -146,6 +145,10 @@ def login(
     
     return response
 
+
+@app.get('/welcome')
+def get_welcome():
+    return "Hello!"
 
 
 
@@ -160,63 +163,63 @@ def logout(credentials_user = Depends(get_current_username)):
 
 
 
-# ----- Zadanie 4
+# # ----- Zadanie 4
 
-from fastapi.templating import Jinja2Templates
-from fastapi import Request
+# from fastapi.templating import Jinja2Templates
+# from fastapi import Request
 
-templates = Jinja2Templates(directory="templates")
+# templates = Jinja2Templates(directory="templates")
 
-@app.post("/welcome")
-@app.get("/welcome")
-def get_welcome(request: Request, credentials_user = Depends(get_current_username)):
-    return templates.TemplateResponse("item.html", {"request": request, "user": credentials_user})
-
-
+# @app.post("/welcome")
+# @app.get("/welcome")
+# def get_welcome(request: Request, credentials_user = Depends(get_current_username)):
+#     return templates.TemplateResponse("item.html", {"request": request, "user": credentials_user})
 
 
 
 
-# ----- Zadanie 5
-
-@app.post("/patient")
-def receive_patient(
-        name: str, surname: str, 
-        response: Response,
-        credentials_user = Depends(get_current_username)
-    ):
-
-    app.counter += 1
-    patient={"name": name, "surname": surname}
-    app.patients[app.counter] = patient
-
-    response.status_code = status.HTTP_302_FOUND
-    response.headers["Location"] = f"/patient/{app.counter}"
-    return patient
-
-@app.get("/patient")
-def all_patients(credentials_user = Depends(get_current_username)):
-    return app.patients
 
 
+# # ----- Zadanie 5
+
+# @app.post("/patient")
+# def receive_patient(
+#         name: str, surname: str, 
+#         response: Response,
+#         credentials_user = Depends(get_current_username)
+#     ):
+
+#     app.counter += 1
+#     patient={"name": name, "surname": surname}
+#     app.patients[app.counter] = patient
+
+#     response.status_code = status.HTTP_302_FOUND
+#     response.headers["Location"] = f"/patient/{app.counter}"
+#     return patient
+
+# @app.get("/patient")
+# def all_patients(credentials_user = Depends(get_current_username)):
+#     return app.patients
 
 
-@app.get("/patient/{pk}", status_code = 200)
-def read_patient_pk(pk: int, response: Response, credentials_user = Depends(get_current_username)):
-    if app.counter < pk or pk < 0: 
-        response.status_code = 204
-        return 204
-    else:
-        return app.patients[pk]
-
-@app.delete("/patient/{pk}")
-def delete_patient_pk(pk: int, credentials_user = Depends(get_current_username)):
-    try:
-        del app.patients[pk]
-        print(f'Patient {pk} removed')
-    except KeyError:
-        print(f"Key {pk} not found")
 
 
-# "trudnY"
-# "PaC13Nt"
+# @app.get("/patient/{pk}", status_code = 200)
+# def read_patient_pk(pk: int, response: Response, credentials_user = Depends(get_current_username)):
+#     if app.counter < pk or pk < 0: 
+#         response.status_code = 204
+#         return 204
+#     else:
+#         return app.patients[pk]
+
+# @app.delete("/patient/{pk}")
+# def delete_patient_pk(pk: int, credentials_user = Depends(get_current_username)):
+#     try:
+#         del app.patients[pk]
+#         print(f'Patient {pk} removed')
+#     except KeyError:
+#         print(f"Key {pk} not found")
+
+
+# # "trudnY"
+# # "PaC13Nt"
