@@ -127,6 +127,7 @@ def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
     session_token = sha256(bytes(f"{credentials.username}{credentials.password}{app.secret_key}", encoding='utf8')).hexdigest()
     app.tokens_list.append(session_token)
 
+
     return session_token
 
 
@@ -173,18 +174,19 @@ templates = Jinja2Templates(directory="templates")
 @app.get("/welcome")
 def get_welcome(
     request: Request,
-    session_token: str =Cookie(None)
+    session_token: str = Cookie(None)
     # session_token = Depends(get_current_username)
     ):
     
-    if not session_token in app.sesions:
+    if not session_token in app.tokens_list:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             # detail="Incorrect email or password",
             # headers={"WWW-Authenticate": "Basic"},
         )
-    
-    return templates.TemplateResponse("item.html", {"request": request, "user": credentials_user})
+
+
+    return templates.TemplateResponse("item.html", {"request": request, "user": "trudnY"})
     
 
     
