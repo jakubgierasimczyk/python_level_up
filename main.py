@@ -154,7 +154,7 @@ def get_welcome():
 
 # ----- Zadanie 3
 @app.post("/logout")
-def logout(response: Response, session_token: str = Depends(get_current_username)):
+def logout(response: Response):
     response = RedirectResponse(url="/")
     response.status_code = status.HTTP_302_FOUND
     response.delete_cookie("session_token")
