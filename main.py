@@ -129,7 +129,7 @@ def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
 
 
 
-@app.post("/login")
+@app.post("/login", status_code=307)
 def login(
     user: str, password: str, 
     # response: RedirectResponse,
@@ -150,7 +150,7 @@ def login(
     
     response = RedirectResponse(url="/welcome")
     response.set_cookie(key="session_token", value=session_token)
-
+    # response.status_code = 304
     return response
 
 
