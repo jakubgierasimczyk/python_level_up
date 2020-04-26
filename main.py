@@ -172,10 +172,22 @@ templates = Jinja2Templates(directory="templates")
 
 @app.get("/welcome")
 def get_welcome(
-    request: Request 
+    request: Request,
+    session_token: str =Cookie(None)
     # session_token = Depends(get_current_username)
     ):
+    
+    if not session_token in app.sesions:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            # detail="Incorrect email or password",
+            # headers={"WWW-Authenticate": "Basic"},
+        )
+    
     return templates.TemplateResponse("item.html", {"request": request, "user": credentials_user})
+    
+
+    
 
 
 
