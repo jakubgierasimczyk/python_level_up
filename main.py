@@ -139,12 +139,14 @@ def login(
     response.set_cookie(key="session_token", value=session_token)
     
         
-    response = RedirectResponse(url = "/welcome")
+    response = RedirectResponse(url = "/hello")
     response.status_code = status.HTTP_302_FOUND
     
     return response
 
-
+@app.get("/hello")
+def get_welcome():
+    return "Hello!"
 
 
 
