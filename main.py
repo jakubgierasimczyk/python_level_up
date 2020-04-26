@@ -127,28 +127,16 @@ def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
 
 @app.post("/login")
 def login(
-    user: str, password: str, 
-    response: Response, 
-    credentials_user = Depends(get_current_username)):
+    user: str, password: str, response: Response,
+    credentials_user = Depends(get_current_username)
+    ):
     
-    print(f"{user}")
-    print(f"{password}")
-    print(f"{credentials_user}")
-
-    # correct_username = user == "trudnY"
-    # correct_password = password == "PaC13Nt"
-    
-    # if not (correct_username and correct_password):
-    #     raise HTTPException(
-    #         status_code=status.HTTP_401_UNAUTHORIZED,
-    #         # detail="Incorrect login or password",
-    #         # headers={"WWW-Authenticate": "Basic"},
-    #     )
-
     session_token = sha256(bytes(f"{user}{password}{app.secret_key}", encoding='utf8')).hexdigest()
     app.tokens_list.append(session_token)
     
     response.set_cookie(key="session_token", value=session_token)
+    
+    
     
     response = RedirectResponse(url = "/welcome")
     response.status_code = status.HTTP_302_FOUND
