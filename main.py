@@ -123,49 +123,22 @@ def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
             # detail="Incorrect email or password",
             # headers={"WWW-Authenticate": "Basic"},
         )
-    return credentials.username + ":" + credentials.password
+
+    session_token = sha256(bytes(f"{credentials.username}{credentials.password}{app.secret_key}", encoding='utf8')).hexdigest()
+    app.tokens_list.append(session_token)
+
+    return session_token
 
 
-
-
-
-# @app.post("/login", status_code=307)
-# def login(
-#     user: str, password: str, 
-#     # response: RedirectResponse,
-#     credentials_user = Depends(get_current_username)
-#     ):
-    
-#     session_token = sha256(bytes(f"{user}{password}{app.secret_key}", encoding='utf8')).hexdigest()
-#     app.tokens_list.append(session_token)
-    
-#     # response.set_cookie(key="session_token", value=session_token)
-#     # response.headers["Location"] = "/welcome"
-#     # response.status_code = 303
-    
-
-
-#     # response = RedirectResponse(url = "/welcome")
-#     # response.status_code = status.HTTP_302_FOUND
-    
-#     response = RedirectResponse(url="/welcome")
-#     response.set_cookie(key="session_token", value=session_token)
-#     # response.status_code = 304
-#     return response
 
 
 
 @app.post("/login")
 def login(
         response: Response, 
-        credentials_user = Depends(get_current_username)):
+        # credentials_user = Depends(get_current_username)):
+        session_token: str = Depends(get_current_username)):
     
-    user, password = credentials_user.split(":")
-
-    session_token = sha256(bytes(f"{user}{password}{app.secret_key}", encoding='utf8')).hexdigest()
-    app.tokens_list.append(session_token)
-    
-
 
     response = RedirectResponse(url='/welcome')
     response.status_code = status.HTTP_302_FOUND
