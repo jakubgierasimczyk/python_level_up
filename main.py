@@ -196,45 +196,85 @@ def get_welcome(
 
 
 
-# # ----- Zadanie 5
+# ----- Zadanie 5
 
-# @app.post("/patient")
-# def receive_patient(
-#         name: str, surname: str, 
-#         response: Response,
-#         credentials_user = Depends(get_current_username)
-#     ):
+@app.post("/patient")
+def receive_patient(
+        name: str, surname: str, 
+        response: Response,
+        session_token = Cookie(None)):
 
-#     app.counter += 1
-#     patient={"name": name, "surname": surname}
-#     app.patients[app.counter] = patient
+    if not session_token in app.tokens_list:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            # detail="Incorrect email or password",
+            # headers={"WWW-Authenticate": "Basic"},
+        )
 
-#     response.status_code = status.HTTP_302_FOUND
-#     response.headers["Location"] = f"/patient/{app.counter}"
-#     return patient
-
-# @app.get("/patient")
-# def all_patients(credentials_user = Depends(get_current_username)):
-#     return app.patients
+    app.counter += 1
+    patient={"name": name, "surname": surname}
+    app.patients[app.counter] = patient
 
 
+    response = RedirectResponse(url=f"/patient/{app.counter}")
+    response.status_code = status.HTTP_302_FOUND
+    
+    return patient
+
+@app.get("/patient")
+def all_patients(session_token = Cookie(None)):
+
+    if not session_token in app.tokens_list:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            # detail="Incorrect email or password",
+            # headers={"WWW-Authenticate": "Basic"},
+        )
+
+    return app.patients
 
 
-# @app.get("/patient/{pk}", status_code = 200)
-# def read_patient_pk(pk: int, response: Response, credentials_user = Depends(get_current_username)):
-#     if app.counter < pk or pk < 0: 
-#         response.status_code = 204
-#         return 204
-#     else:
-#         return app.patients[pk]
 
-# @app.delete("/patient/{pk}")
-# def delete_patient_pk(pk: int, credentials_user = Depends(get_current_username)):
-#     try:
-#         del app.patients[pk]
-#         print(f'Patient {pk} removed')
-#     except KeyError:
-#         print(f"Key {pk} not found")
+
+@app.get("/patient/{pk}")
+def read_patient_pk(
+        pk: int, 
+        response: Response, 
+        session_token = Cookie(None)):
+
+    if not session_token in app.tokens_list:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            # detail="Incorrect email or password",
+            # headers={"WWW-Authenticate": "Basic"},
+        )
+
+
+
+    if app.counter < pk or pk < 0: 
+        response.status_code = 204
+        return 204
+    else:
+        return app.patients[pk]
+
+
+@app.delete("/patient/{pk}")
+def delete_patient_pk(
+        pk: int, 
+        session_token = Cookie(None)):
+
+    if not session_token in app.tokens_list:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            # detail="Incorrect email or password",
+            # headers={"WWW-Authenticate": "Basic"},
+        )
+
+    try:
+        del app.patients[pk]
+        print(f'Patient {pk} removed')
+    except KeyError:
+        print(f"Key {pk} not found")
 
 
 # # "trudnY"
