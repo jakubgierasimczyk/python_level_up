@@ -11,8 +11,7 @@ class MethodName(str, Enum):
 
 
 app = FastAPI()
-# app.counter = -1
-app.counter = 0
+app.counter = -1
 app.patients = {}
 
 
@@ -224,7 +223,7 @@ def receive_patient(
 
 
 @app.get("/patient")
-def all_patients(response = Response, session_token = Cookie(None)):
+def all_patients(response: Response, session_token = Cookie(None)):
 
     if not session_token in app.tokens_list:
         raise HTTPException(
@@ -253,7 +252,7 @@ def read_patient_pk(
 
 
 
-    if app.counter < pk or pk < 1: 
+    if app.counter < pk or pk < 0: 
         response.status_code = 204
         return 204
     else:
@@ -280,5 +279,5 @@ def delete_patient_pk(
         print(f"Key {pk} not found")
 
 
-# # "trudnY"
-# # "PaC13Nt"
+# # # "trudnY"
+# # # "PaC13Nt"
