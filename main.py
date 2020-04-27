@@ -231,7 +231,8 @@ def all_patients(response: Response, session_token = Cookie(None)):
             # detail="Incorrect email or password",
             # headers={"WWW-Authenticate": "Basic"},
         )
-
+    if app.counter < 0:
+        response.status_code = HTTP_204_NO_CONTENT
     return app.patients
 
 
@@ -253,7 +254,7 @@ def read_patient_pk(
 
 
     if app.counter < pk or pk < 0: 
-        response.status_code = 204
+        response.status_code = HTTP_204_NO_CONTENT
         return 204
     else:
         return app.patients[pk]
@@ -275,6 +276,7 @@ def delete_patient_pk(
     try:
         del app.patients[pk]
         print(f'Patient {pk} removed')
+        response.status_code = HTTP_204_NO_CONTENT
     except KeyError:
         print(f"Key {pk} not found")
 
