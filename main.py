@@ -219,7 +219,7 @@ def receive_patient(
     response = RedirectResponse(url=f"/patient/{app.counter}")
     response.status_code = status.HTTP_302_FOUND
     
-    return response
+    return patient
 
 
 @app.get("/patient")
