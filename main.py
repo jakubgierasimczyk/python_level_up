@@ -178,6 +178,8 @@ async def composers(composer_name: str):
 
 # ----- Zadanie 3
 
+
+
 def test_artist_exists(artistid: int):
 
     if artistid is None:
@@ -200,6 +202,9 @@ def test_artist_exists(artistid: int):
 
 
     return True
+
+
+
 
 
 def get_max_id():
@@ -240,27 +245,22 @@ async def add_album(new_artist: NewArtist):
     max_id = get_max_id()
     print(f'{max_id=}')
 
-
-
-    new_album = {
-        "albumid": max_id+1,
-        "title": title,
-        "artistid": artistid}
-
-    print(f'{new_album=}')
     
     cursor = app.db_connection.execute(
         "INSERT INTO albums (AlbumId, Title, ArtistId) VALUES (?, ?, ?)", 
-        (new_album['albumid'], new_album['title'], new_album['artistid'], )
+        (max_id+1, title, artistid, )
     )
-    app.db_connection.commit()  
+    app.db_connection.commit() 
 
-	new_album_id = cursor.lastrowid
+    new_album_id = cursor.lastrowid
     app.db_connection.row_factory = sqlite3.Row
     new_album = app.db_connection.execute(
         """SELECT albumid AS AlbumId, title AS Title, artistid as ArtistId
          FROM albums WHERE albumid = ?""",
         (new_album_id, )).fetchone() 
+
+    # print(f'{new_album=}')
+    
     return new_album
     
 
@@ -285,3 +285,6 @@ async def get_album(albumid: int):
         "ArtistId": album[0][2]}
     
     return album_dict
+
+
+
