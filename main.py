@@ -255,6 +255,12 @@ async def add_album(new_artist: NewArtist):
     )
     app.db_connection.commit()  
 
+	new_album_id = cursor.lastrowid
+    app.db_connection.row_factory = sqlite3.Row
+    new_album = app.db_connection.execute(
+        """SELECT albumid AS AlbumId, title AS Title, artistid as ArtistId
+         FROM albums WHERE albumid = ?""",
+        (new_album_id, )).fetchone() 
     return new_album
     
 
