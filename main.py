@@ -243,12 +243,12 @@ async def add_album(new_artist: NewArtist):
 
 
     new_album = {
-        "AlbumId": max_id+1,
-        "Title": title,
-        "ArtistId": artistid}
+        "albumid": max_id+1,
+        "title": title,
+        "artistid": artistid}
     
     cursor = app.db_connection.execute(
-        "INSERT INTO albums (AlbumId, Title, ArtistId) VALUES (?)", (new_album.AlbumId, new_album.Title, new_album.ArtistId, )
+        "INSERT INTO albums (AlbumId, Title, ArtistId) VALUES (?)", (new_album.albumid, new_album.title, new_album.artistid, )
     )
     app.db_connection.commit()  
 
