@@ -1,285 +1,152 @@
-from fastapi import FastAPI, Response, status
-from enum import Enum
-from pydantic import BaseModel
-
-
-class MethodName(str, Enum):
-    get = "GET"
-    post = "POST"
-    put = "PUT"
-    delete = "DELETE"
-
-
-app = FastAPI()
-app.counter = -1
-app.patients = {}
-
-
-
-# @app.get("/")
-# def root():
-# 	return {"message": "Hello World during the coronavirus pandemic!"}
-
-
-
-@app.get("/method")
-async def get_method():
-    return {"method": "GET"}
-
-
-@app.put("/method")
-def put_method():
-    return {"method": "PUT"}
-    
-
-@app.post("/method")
-def post_method():
-    return {"method": "POST"}
-
-
-
-
-
-# class GiveMePatientRequest(BaseModel):
-# 	name: str
-# 	surename: str
-
-# class GiveMePatientResponse(BaseModel):
-# 	id: int
-# 	patient: dict
-
-# @app.post("/patient", response_model=GiveMePatientResponse)
-# def receive_patient(rq: GiveMePatientRequest):
-# 	app.counter += 1
-# 	patient=rq.dict()
-# 	app.patients[app.counter] = patient
-# 	return GiveMePatientResponse(id = app.counter, patient = patient)
-
-
-
-
-# @app.get("/patient/{pk}", status_code = 200)
-# def read_patient_pk(pk: int, response: Response):
-# 	if app.counter < pk or pk < 0: 
-# 		response.status_code = 204
-# 		return 204
-# 	else:
-# 		return app.patients[pk]
-
-
-
-
-
-
-# ------------------------ Lecture 3  ------------------------ #
-
-
-from hashlib import sha256
-from fastapi import Cookie, HTTPException
-
-
-
-
-
-# ----- Zadanie 1 
-
-@app.get("/")
-def root():
-	return "Hello!"
-
-
-# @app.get("/welcome")
-# def get_welcome():
-# 	return "Hello!"
-
-
-
-
-
-
-
-
-# ----- Zadanie 2
-
-from starlette.responses import RedirectResponse
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from fastapi import Depends
 import secrets
+from typing import Dict, Optional
+
+from fastapi import Depends, FastAPI, Response, status, Request, HTTPException
+from fastapi.templating import Jinja2Templates
+from fastapi.security import APIKeyCookie, HTTPBasic, HTTPBasicCredentials
+from jose import jwt
+from pydantic import BaseModel
+from starlette.responses import RedirectResponse
 
 
-app.secret_key = "very constatn and random secret, best 64 characters"
-app.tokens_list = []
-security = HTTPBasic()
+
+class Patient(BaseModel):
+	name: str
+	surname: str
 
 
-def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
+class DaftAPI(FastAPI):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.counter: int = 0
+        self.storage: Dict[int, Patient] = {}
+        self.security = HTTPBasic(auto_error=False)
+        self.secret_key = "kluczyk"
+        self.API_KEY = "session"
+        self.cookie_sec = APIKeyCookie(name=self.API_KEY, auto_error=False)
+        self.templates = Jinja2Templates(directory="templates")
+
+
+app = DaftAPI()
+
+
+def is_logged(session: str = Depends(app.cookie_sec), silent: bool = False):
+    try:
+        payload = jwt.decode(session, app.secret_key)
+        return payload.get("magic_key")
+    except Exception:
+        pass
+
+    if silent:
+        return False
+
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
+
+def authethicate(credentials: Optional[HTTPBasicCredentials] = Depends(app.security)):
+    if not credentials:
+        return False
+
     correct_username = secrets.compare_digest(credentials.username, "trudnY")
     correct_password = secrets.compare_digest(credentials.password, "PaC13Nt")
-    # print(f"{credentials.username}")
-    # print(f"{credentials.password}")
+
     if not (correct_username and correct_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            # detail="Incorrect email or password",
-            # headers={"WWW-Authenticate": "Basic"},
-        )
-
-    session_token = sha256(bytes(f"{credentials.username}{credentials.password}{app.secret_key}", encoding='utf8')).hexdigest()
-    app.tokens_list.append(session_token)
+        return False
+    return True
 
 
-    return session_token
+@app.get("/")
+def read_root():
+    return {"message": "Hello World during the coronavirus pandemic!"}
 
 
-
+@app.get("/welcome")
+def welcome(request: Request, is_logged: bool = Depends(is_logged)):
+    return app.templates.TemplateResponse(
+        "welcome.html", {"request": request, "user": "trudnY"}
+    )
 
 
 @app.post("/login")
-def login(
-        response: Response, 
-        session_token: str = Depends(get_current_username)):
-    
+async def login_basic(auth: bool = Depends(authethicate)):
+    if not auth:
+        response = Response(headers={"WWW-Authenticate": "Basic"}, status_code=401)
+        return response
 
-    response = RedirectResponse(url='/welcome')
-    response.status_code = status.HTTP_302_FOUND
-    response.set_cookie(key="session_token", value=session_token)
-    
+    response = RedirectResponse(url="/welcome")
+    token = jwt.encode({"magic_key": True}, app.secret_key)
+    response.set_cookie("session", token)
     return response
 
 
-# @app.get('/welcome')
-# def get_welcome():
-#     return "Hello!"
-
-
-
-# ----- Zadanie 3
 @app.post("/logout")
-def logout(response: Response):
+async def logout(is_logged: bool = Depends(is_logged)):
     response = RedirectResponse(url="/")
-    response.status_code = status.HTTP_302_FOUND
-    response.delete_cookie("session_token")
+    response.delete_cookie("session")
     return response
 
-
-
-
-# # ----- Zadanie 4
-
-from fastapi.templating import Jinja2Templates
-from fastapi import Request
-
-templates = Jinja2Templates(directory="templates")
-
-@app.get("/welcome")
-def get_welcome(
-    request: Request,
-    session_token: str = Cookie(None)
-    # session_token = Depends(get_current_username)
-    ):
-    
-    if not session_token in app.tokens_list:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            # detail="Incorrect email or password",
-            # headers={"WWW-Authenticate": "Basic"},
-        )
-
-
-    return templates.TemplateResponse("item.html", {"request": request, "user": "trudnY"})
-    
-
-    
-
-
-
-
-
-
-# ----- Zadanie 5
 
 @app.post("/patient")
-def receive_patient(
-        name: str, surname: str, 
-        response: Response,
-        session_token = Cookie(None)):
-
-    if not session_token in app.tokens_list:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            # detail="Incorrect email or password",
-            # headers={"WWW-Authenticate": "Basic"},
-        )
-
-    app.counter += 1
-    patient={"name": name, "surname": surname}
-    app.patients[app.counter] = patient
-
-
+def add_patient(patient: Patient, is_logged: bool = Depends(is_logged)):
+    app.storage[app.counter] = patient
     response = RedirectResponse(url=f"/patient/{app.counter}")
-    response.status_code = status.HTTP_302_FOUND
-    
-    return patient
+    app.counter += 1
+    return response
 
 
 @app.get("/patient")
-def all_patients(response: Response, session_token = Cookie(None)):
-
-    if not session_token in app.tokens_list:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            # detail="Incorrect email or password",
-            # headers={"WWW-Authenticate": "Basic"},
-        )
-    if app.counter < 0:
-        response.status_code = HTTP_204_NO_CONTENT
-    return app.patients
-
-
+def show_patients(is_logged: bool = Depends(is_logged)):
+    return app.storage
 
 
 @app.get("/patient/{pk}")
-def read_patient_pk(
-        pk: int, 
-        response: Response, 
-        session_token = Cookie(None)):
-
-    if not session_token in app.tokens_list:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            # detail="Incorrect email or password",
-            # headers={"WWW-Authenticate": "Basic"},
-        )
-
-
-
-    if app.counter < pk or pk < 0: 
-        response.status_code = HTTP_204_NO_CONTENT
-        return 204
-    else:
-        return app.patients[pk]
+def show_patient(pk: int, is_logged: bool = Depends(is_logged)):
+    if pk in app.storage:
+        return app.storage.get(pk)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @app.delete("/patient/{pk}")
-def delete_patient_pk(
-        pk: int, 
-        response: Response,
-        session_token = Cookie(None)):
-
-    if not session_token in app.tokens_list:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            # detail="Incorrect email or password",
-            # headers={"WWW-Authenticate": "Basic"},
-        )
-
-    try:
-        del app.patients[pk]
-        print(f'Patient {pk} removed')
-        response.status_code = HTTP_204_NO_CONTENT
-    except KeyError:
-        print(f"Key {pk} not found")
+def delte_patient(pk: int, is_logged: bool = Depends(is_logged)):
+    if pk in app.storage:
+        del app.storage[pk]
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-# # # "trudnY"
-# # # "PaC13Nt"
+
+
+
+
+
+
+
+# --------------- Lecture 4 --------------- #
+
+
+import sqlite3
+
+@app.on_event("startup")
+async def startup():
+    app.db_connection = sqlite3.connect('chinook.db')
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    app.db_connection.close()
+
+
+
+
+
+@app.get("/tracks")
+async def tracks(page: int = 0, per_page: int = 10):
+    app.db_connection.row_factory = sqlite3.Row
+    tracks = app.db_connection.execute(
+    	'''SELECT "TrackId", "Name", "AlbumId", "MediaTypeId", 
+    	"GenreId", "Composer", "Milliseconds", "Bytes", "UnitPrice"
+    	FROM tracks ORDER BY "TrackId"
+    	LIMIT :per_page OFFSET :offset;''',
+    	{'offset': per_page*page, 'per_page': per_page}
+    	).fetchall()
+
+    return tracks
