@@ -150,3 +150,19 @@ async def tracks(page: int = 0, per_page: int = 10):
     	).fetchall()
 
     return tracks
+
+
+
+@app.get("/tracks/composers")
+async def composers(composer_name: str):
+	app.db_connection.row_factory = lambda cursor, x: x[0]
+	names = app.db_connection.execute(
+    	'''SELECT Name FROM tracks WHERE Composer = :name''', 
+    	{'name': composer_name}
+    	).fetchall()
+
+	if len(names) == 0:
+		names = {"error": f'No such artist: {composer_name}'}
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail = names)
+
+	return names
