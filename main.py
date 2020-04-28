@@ -123,6 +123,7 @@ def delte_patient(pk: int, is_logged: bool = Depends(is_logged)):
 # --------------- Lecture 4 --------------- #
 
 
+# ----- Zadanie 1
 import sqlite3
 
 @app.on_event("startup")
@@ -153,6 +154,9 @@ async def tracks(page: int = 0, per_page: int = 10):
 
 
 
+
+# ----- Zadanie 2
+
 @app.get("/tracks/composers")
 async def composers(composer_name: str):
 	app.db_connection.row_factory = lambda cursor, x: x[0]
@@ -167,3 +171,108 @@ async def composers(composer_name: str):
 		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail = names)
 
 	return names
+
+
+
+
+
+# ----- Zadanie 3
+
+def test_artist_exists(artistid: int):
+
+    if artistid is None:
+        msg = {"error": 'No such artist: None'}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail = msg)
+
+
+    app.db_connection.row_factory = lambda cursor, x: x[0]
+    artist_in_db = app.db_connection.execute(
+        '''SELECT ArtistId FROM artists 
+        WHERE ArtistId = :artistid LIMIT 1;''', 
+        {'artistid': artistid}
+        ).fetchall()
+    
+    print(f'{artist_in_db=}')
+
+    if len(artist_in_db) == 0:
+        msg = {"error": f'No such artist: {artistid}'}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail = msg)
+
+
+    return True
+
+def get_max_id():
+
+    app.db_connection.row_factory = lambda cursor, x: x[0]
+    max_id = app.db_connection.execute(
+        '''SELECT max(ArtistId) FROM albums;'''
+        ).fetchall()
+
+    return max_id[0]
+
+
+
+
+class NewArtist(BaseModel):
+    title: str
+    artist_id: int
+
+
+@app.post("/albums", status_code = 201)
+async def add_album(new_artist: NewArtist):
+
+    title = new_artist.title
+    artistid = new_artist.artist_id
+    print(f'{title=}, {artistid=}')
+
+    # Sprawdzenie czy w wejsciowym jsonie sa wymagane pola
+    if not title and artistid:
+        msg = {"error": f'Empty title or artist id: {title=}, {artistid=}'}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail = msg)
+
+
+    # Sprawdzenie czy dany artysta wystepuje w bazie danych
+    artist_exists = test_artist_exists(artistid)
+    print(f'{artist_exists=}')
+
+
+    # Sprawdzenie maksymalnego albumid
+    max_id = get_max_id()
+    print(f'{max_id=}')
+
+
+
+    new_album = {
+        "AlbumId": max_id+1,
+        "Title": title,
+        "ArtistId": artistid}
+    
+    cursor = app.db_connection.execute(
+        "INSERT INTO albums (AlbumId, Title, ArtistId) VALUES (?)", (new_album.AlbumId, new_album.Title, new_album.ArtistId, )
+    )
+    app.db_connection.commit()  
+
+    return new_album
+    
+
+
+@app.get("/albums/{albumid}")
+async def get_album(albumid: int):
+    app.db_connection.row_factory = lambda cursor, x: x[:4]
+    album = app.db_connection.execute(
+        '''SELECT AlbumId, Title, ArtistId FROM albums WHERE AlbumId = :albumid;''', 
+        {'albumid': albumid}
+        ).fetchall()
+
+    if len(album) == 0:
+        msg = {"error": f'No such artist: {composer_name}'}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail = msg)
+
+
+    album_dict = album
+    album_dict = {
+        "AlbumId": album[0][0],
+        "Title": album[0][1],
+        "ArtistId": album[0][2]}
+    
+    return album_dict
