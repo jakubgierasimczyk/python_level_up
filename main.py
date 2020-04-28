@@ -218,7 +218,7 @@ class NewArtist(BaseModel):
     artist_id: int
 
 
-@app.post("/albums", status_code = 201)
+@app.post("/albums", status_code = 200)
 async def add_album(new_artist: NewArtist):
 
     title = new_artist.title
