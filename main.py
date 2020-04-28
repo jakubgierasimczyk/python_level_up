@@ -212,16 +212,17 @@ def get_max_id():
     return max_id[0]
 
 
+
 class NewArtist(BaseModel):
     title: str
-    artistid: int
+    artist_id: int
 
 
 @app.post("/albums", status_code = 201)
 async def add_album(new_artist: NewArtist):
 
     title = new_artist.title
-    artistid = new_artist.artistid
+    artistid = new_artist.artist_id
     print(f'{title=}, {artistid=}')
 
     # Sprawdzenie czy w wejsciowym jsonie sa wymagane pola
