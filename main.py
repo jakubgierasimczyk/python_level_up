@@ -416,17 +416,18 @@ async def update_customers(customer_id: int, updates: Customer):
 
 
 
-# ----- Zadanie 5
+# ----- Zadanie 5/6
 
 @app.get("/sales", status_code=200)
 async def sales(category: str):
 
-    possible_categories = ['customers']
+    possible_categories = ['customers', 'genres']
     if category not in possible_categories:
         msg = {"error": f'No such category: {category=}'}
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail = msg)
 
 
+    # Zadanie 5
     if category=="customers":
         query_str = '''SELECT a.CustomerId, a.Email, a.Phone, b.price 
                     FROM customers a
@@ -436,7 +437,7 @@ async def sales(category: str):
                     ON a.CustomerId = b.CustomerId
                     ORDER BY b.price desc, a.CustomerId asc;'''
 
-        print(f'{query_str=}')
+        # print(f'{query_str=}')
 
 
         # Pobranie danych o wybranym kliencie
@@ -452,6 +453,41 @@ async def sales(category: str):
                 "Email": item[1],
                 "Phone": item[2],
                 "Sum": round(item[3], 2)
+            })
+
+    # Zadanie 6
+    if category=="genres":
+        query_str = '''SELECT d.Name AS Name, SUM(c.Quantity) AS Quantity FROM 
+                            (
+                                SELECT TrackId, SUM(Quantity) AS quantity
+                                FROM invoice_items 
+                                GROUP BY TrackId
+                            ) c
+                            LEFT JOIN
+                            (
+                                SELECT a.TrackId, b.Name FROM tracks a
+                                LEFT JOIN
+                                (SELECT GenreId, Name FROM genres) b
+                                ON a.GenreId = b.GenreId
+                            ) d
+                            ON c.TrackId = d.TrackId
+                            GROUP BY d.Name
+                            ORDER BY Quantity DESC, Name ASC;'''
+
+        # print(f'{query_str=}')
+
+
+        # Pobranie danych o wybranym kliencie
+        app.db_connection.row_factory = lambda cursor, x: x[:3]
+        results_db = app.db_connection.execute(query_str).fetchall()
+
+
+        # Mapowanie do jsona
+        results = []
+        for item in results_db:
+            results.append({
+                "Name": item[0],
+                "Sum": item[1]
             })
         
 
