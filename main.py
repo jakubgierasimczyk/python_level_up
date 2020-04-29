@@ -413,3 +413,46 @@ async def update_customers(customer_id: int, updates: Customer):
     
     return new_customer
     
+
+
+
+# ----- Zadanie 5
+
+@app.get("/sales/{category}", status_code=200)
+async def sales(category: str):
+
+    possible_categories = ['customers']
+    if category not in possible_categories:
+        msg = {"error": f'No such category: {category=}'}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail = msg)
+
+
+    if category=="customers":
+        query_str = '''SELECT a.CustomerId, a.Email, a.Phone, b.price 
+                    FROM customers a
+                    LEFT JOIN 
+                    (SELECT CustomerId, sum(Total) AS price FROM invoices
+                        GROUP BY CustomerId) b
+                    ON a.CustomerId = b.CustomerId
+                    ORDER BY b.price desc, a.CustomerId asc;'''
+
+        print(f'{query_str=}')
+
+
+        # Pobranie danych o wybranym kliencie
+        app.db_connection.row_factory = lambda cursor, x: x[:5]
+        results_db = app.db_connection.execute(query_str).fetchall()
+
+
+        # Mapowanie do jsona
+        results = []
+        for item in results_db:
+            results.append({
+                "CustomerId": item[0],
+                "Email": item[1],
+                "Phone": item[2],
+                "Sum": round(item[3], 2)
+            })
+        
+
+    return results
