@@ -123,7 +123,7 @@ def delte_patient(pk: int, is_logged: bool = Depends(is_logged)):
 # --------------- Lecture 4 --------------- #
 
 
-# ----- Zadanie 1
+
 import sqlite3
 
 @app.on_event("startup")
@@ -137,7 +137,7 @@ async def shutdown():
 
 
 
-
+# ----- Zadanie 1
 
 @app.get("/tracks")
 async def tracks(page: int = 0, per_page: int = 10):
@@ -177,8 +177,6 @@ async def composers(composer_name: str):
 
 
 # ----- Zadanie 3
-
-
 
 def test_artist_exists(artistid: int):
 
@@ -288,3 +286,130 @@ async def get_album(albumid: int):
 
 
 
+
+
+
+# ----- Zadanie 4
+
+def test_customer_exists(customer_id: int):
+
+    if customer_id is None:
+        msg = {"error": 'No such customer: None'}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail = msg)
+
+
+    app.db_connection.row_factory = lambda cursor, x: x[0]
+    customer_in_db = app.db_connection.execute(
+        '''SELECT CustomerId FROM customers 
+        WHERE CustomerId = :customer_id LIMIT 1;''', 
+        {'customer_id': customer_id}
+        ).fetchall()
+    
+    print(f'{customer_in_db=}')
+
+    if len(customer_in_db) == 0:
+        msg = {"error": f'No such customer: {customer_id}'}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail = msg)
+
+    return True
+
+
+class Customer(BaseModel):
+    company: str = None
+    address: str = None
+    city: str = None
+    state: str = None
+    country: str = None
+    postalcode: str = None
+    fax: str = None
+
+
+@app.put("/customers/{customer_id}", status_code=200)
+async def update_customers(customer_id: int, updates: Customer):
+
+    # Mapowanie nazw (chodzi o wielkosc liter w danych do updatu i danych wynikowych)
+    output_names = ['Company', 'Address', 'City', 'State', 'Country', 'PostalCode', 'Fax']
+    input_names = [x.lower() for x in output_names]
+
+
+    # Sprawdzenie czy dany klient wystepuje w bazie danych
+    customer_exists = test_customer_exists(customer_id)
+    print(f'{customer_exists=}')
+
+
+    # Pobranie danych o wybranym kliencie
+    app.db_connection.row_factory = lambda cursor, x: x[:13]
+    customer_db = app.db_connection.execute(
+        '''SELECT CustomerId, FirstName, LastName, Company, Address,
+                    City, State, Country, PostalCode, Phone, Fax,
+                    Email, SupportRepId
+            FROM customers
+            WHERE CustomerId = :customer_id;''', 
+        {'customer_id': customer_id}
+        ).fetchall()
+
+    # Mapowanie do jsona
+    customer = {
+        "CustomerId": customer_db[0][0],
+        "FirstName": customer_db[0][1],
+        "LastName": customer_db[0][2],
+        "Company": customer_db[0][3],
+        "Address": customer_db[0][4],
+        "City": customer_db[0][5],
+        "State": customer_db[0][6],
+        "Country": customer_db[0][7],
+        "PostalCode": customer_db[0][8],
+        "Phone": customer_db[0][9],
+        "Fax": customer_db[0][10],
+        "Email": customer_db[0][11],
+        "SupportRepId": customer_db[0][12],
+    }
+    print(f'Current customer: {customer=}')
+
+
+    # Bierzemy dane wejsciowe (o formacie Customer)
+    # i usuwamy pola, ktore nie sa ustawione (nie chcemy ich updatowac)
+    update_data = updates.dict(exclude_unset=True)
+   
+    # Trzeba zmienic nazwy kluczy, bo nie sa kompatybilne (wielkosc liter)    
+    for old, new in zip(input_names, output_names):
+        if old in update_data.keys():
+            update_data[new] = update_data.pop(old)
+
+    print(f'Data to update: {update_data=}') 
+    
+
+    # Update aktualnego klienta
+    customer.update(update_data)
+    print(f'Updated customer: {customer=}')    
+
+
+    # Update bazy danych
+    cursor = app.db_connection.execute(
+       '''UPDATE customers SET 
+                company = ?,
+                address = ?,
+                city = ?,
+                state = ?,
+                country = ?,
+                postalcode = ?,
+                fax = ?
+            WHERE CustomerId = ?''', 
+        (customer['Company'], customer['Address'], customer['City'], customer['State'], customer['Country'],
+            customer['PostalCode'], customer['Fax'], customer['CustomerId'])
+    )
+    app.db_connection.commit()
+
+    # Sprawdzenie nowych danych
+    app.db_connection.row_factory = sqlite3.Row
+    new_customer = app.db_connection.execute(
+        '''SELECT CustomerId, FirstName, LastName, Company, Address,
+                    City, State, Country, PostalCode, Phone, Fax,
+                    Email, SupportRepId
+            FROM customers
+            WHERE CustomerId = :customer_id;''', 
+        {'customer_id': customer_id}).fetchone()
+
+    
+    return new_customer
+    
