@@ -432,7 +432,7 @@ async def sales(category: str):
         query_str = '''SELECT a.CustomerId, a.Email, a.Phone, b.price 
                     FROM customers a
                     LEFT JOIN 
-                    (SELECT CustomerId, sum(Total) AS price FROM invoices
+                    (SELECT CustomerId, ROUND(sum(Total), 2) AS price FROM invoices
                         GROUP BY CustomerId) b
                     ON a.CustomerId = b.CustomerId
                     ORDER BY b.price desc, a.CustomerId asc;'''
@@ -452,7 +452,7 @@ async def sales(category: str):
                 "CustomerId": item[0],
                 "Email": item[1],
                 "Phone": item[2],
-                "Sum": round(item[3], 2)
+                "Sum": item[3]
             })
 
     # Zadanie 6
