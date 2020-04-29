@@ -418,7 +418,7 @@ async def update_customers(customer_id: int, updates: Customer):
 
 # ----- Zadanie 5
 
-@app.get("/sales/{category}", status_code=200)
+@app.get("/sales", status_code=200)
 async def sales(category: str):
 
     possible_categories = ['customers']
